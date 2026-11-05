@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/audit_event.v2.json",
+  "title": "Loop Audit Event v2.0",
+  "type": "object",
+  "required": ["event_id", "event_type", "timestamp", "correlation_id", "issuer_id", "issuer_type", "schema_version", "event_hash", "stratum_id"],
+  "properties": {
+    "event_id": { "type": "string", "format": "uuid" },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "loop.start", "predicate.registered", "predicate.validated", "check.registered",
+        "plan.emit", "tool.call", "tool.result", "model.call", "model.result",
+        "verify.attempt", "verify.result", "retry.scheduled",
+        "rule.learned", "rule.declined", "rule.revalidated", "rule.retired",
+        "oracle.attested", "monitor.attested", "monitor.disagreement",
+        "circuit_break", "policy.decision", "canary.injected", "canary.result",
+        "log.notarized", "loop.terminate"
+      ]
+    },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "correlation_id": { "type": "string", "format": "uuid" },
+    "parent_event_id": { "type": ["string", "null"], "format": "uuid" },
+    "issuer_id": { "type": "string" },
+    "issuer_type": {
+      "type": "string",
+      "enum": ["model", "tool", "orchestrator", "human", "system", "monitor", "oracle", "analyzer"]
+    },
+    "schema_version": { "const": "2.0.0" },
+    "event_hash": { "type": "string" },
+    "previous_hash": { "type": ["string", "null"] },
+    "stratum_id": { "type": "string" },
+    "lineage_hash": { "type": ["string", "null"] }
+  },
+  "additionalProperties": true
+}

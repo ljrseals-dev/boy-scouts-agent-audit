@@ -1,39 +1,33 @@
-# Audit Procedure
+# Corrected Audit Procedure v2.0 (strictly schema-bound)
 
-A numbered, repeatable procedure an operator (or automated auditor) runs for every logical loop.
+## Pre-flight (before loop.start accepted)
+1. Confirm predicate.registered + predicate.validated (verdict=valid) for at least one safety predicate.
+2. Confirm check.registered references the validated predicate and falsifiable=true.
+3. Confirm goal_attestation (signed) is present OR Intent Verification Oracle has emitted a policy.decision=allow for the goal_hash (D10 resolved).
+4. Confirm all caps are non-null and satisfy schema minima (null caps = schema violation).
+5. Confirm oracle_id has a current oracle.attested (non-expired, matching lineage).
+6. Confirm dual monitors are registered and attested.
+7. Confirm environment_hash matches expected.
+8. Reject loop.start on any failure. No partial start.
 
-## Pre-flight (before loop.start is accepted)
+## In-flight
+9. On every tool.call: enforce I3 (idempotency_key if side_effecting), auth_context, expected_schema_hash.
+10. On every tool.result / model.result: schema validation; cost/latency recording.
+11. On every verify.attempt: assert private_trace_present=false; oracle must be attested (M3).
+12. On every verify.result: enforce I4 three-clause independence; record evidence.
+13. Dual monitors continuously evaluate all six caps (I5); emit monitor.attested; require agreement for circuit_break (M4).
+14. Enforce no late check.registered after first side-effecting event.
+15. Enforce I1 (exactly one terminal per tool.call) within bounds.
+16. Maintain hash chain; at stratum boundaries emit log.notarized.
 
-1. Confirm at least one check.registered exists for the correlation_id with falsifiable = true.
-2. Confirm a safety-class check is present (or deployment policy equivalent).
-3. Confirm caps object is fully populated (token_budget, cost_usd, wall_clock_ms, max_retries, max_fanout, verify_ms) according to policy.
-4. Confirm oracle_id is assigned and is independent of any generator model_family that will be used.
-5. Confirm environment_hash is captured and matches the expected environment.
-6. Confirm goal_hash is recorded and matches the human-intended goal (or has explicit human sign-off).
-7. Reject the loop.start if any of the above fail. Do not proceed.
+## Post-flight
+17. Within caps.reconciliation_ms (I6 bounded): every verify.result:fail must have rule.learned or rule.declined.
+18. For every rule.learned: set half_life_ms and next_revalidation (M5).
+19. Emit cost_summary on loop.terminate; set reconciliation_complete=true only when I6 is satisfied.
+20. Verify hash-chain integrity and presence of required log.notarized events.
+21. Archive according to retention; escalate any S0/S1 findings.
 
-## In-flight (continuous monitors)
-
-8. On every tool.call: assert I3 (idempotency_key present if side_effecting) and auth_context present.
-9. On every tool.result or model.result: assert schema validation against expected schema_hash.
-10. On every verify.attempt / verify.result: assert I4 (issuer independence).
-11. Continuously evaluate cumulative tokens, cost, wall-clock, retries, fan-out against caps (I5). Emit circuit_break on breach.
-12. Assert no check.registered appears after the first side-effecting event (I2 extension).
-13. Assert every tool.call receives exactly one terminal event (I1) within the verify_ms / wall_clock bound.
-14. Propagate correlation_id and maintain hash chain (previous_hash).
-
-## Post-flight (after loop.terminate or circuit_break)
-
-15. Reconcile the failure ledger: every verify.result:fail must have a rule.learned or rule.declined (I6). Block or flag if missing.
-16. Extract and persist any new rules into the agent playbook.
-17. Emit final cost_summary (tokens, cost_usd, latency, retry count, fan-out peak).
-18. Verify the hash chain integrity from loop.start to terminal event.
-19. Archive the correlation_id stream according to retention policy.
-20. If any S0/S1 finding occurred, escalate to human review with the full minimal failing context.
-
-## Failure-Only Feedback Contract
-
-When a retry is scheduled:
-- The retry.scheduled event MUST carry only the minimal failing diff (the specific assertion that failed + the minimal surrounding context required to understand it).
-- Full original context is forbidden unless explicitly justified and size-capped.
-- This reduces cost, limits context pollution, and forces the generator to focus on the actual defect.
+## Failure-Only Feedback Contract (context-pollution safe)
+- retry.scheduled.minimal_diff is size-capped, injection-scanned, and free of executable content.
+- Diff envelope contains only: failing assertion identifier, minimal surrounding structured data, and a hash of the larger context (not the context itself).
+- Full original context is never re-injected unless an explicit, audited policy.decision allows it under a separate budget.

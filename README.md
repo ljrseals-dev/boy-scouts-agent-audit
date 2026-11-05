@@ -1,39 +1,31 @@
-# Boy Scouts Agent Audit System
+# Boy Scouts Loop Audit System — Specification v2.0
 
-**Principal Reliability Engineering Specification for AI Agent Loops**
+Closes every defect in the meta-audit register (D1–D14) and implements the full roadmap (R1–R11), including the Carbon-Dating Changelog protocol.
 
-A falsifiable, oracle-independent, fail-closed audit framework for autonomous agent systems. Named after the four core Boy Scout principles that survive contact with a stressed operator:
+## Doctrine
+See [DOCTRINE.md](DOCTRINE.md).
 
-1. **Be Prepared** — Pre-register a falsifiable definition of done before the loop starts.
-2. **Buddy System** — Independent oracle; never let the generator grade itself.
-3. **Leave No Trace** — Append-only, tamper-evident log of every model call, tool call, retry, and state mutation.
-4. **Do a Good Turn Daily** — Every observed failure becomes a persistent rule in the playbook.
-5. **Fail Closed** — Unbounded loops, fan-out, spend, or wall-clock are defects. Hard stops are mandatory.
+## Defect Closure
+See [DEFECT_CLOSURE.md](DEFECT_CLOSURE.md) — every item has a closure mechanism, evidence artifact, and verification query.
 
-## Deliverables
+## Core Artifacts
+| File | Content |
+|------|---------|
+| SCHEMA.md | Corrected event schema (all required types, null caps forbidden) |
+| INVARIANTS.md | I1–I6 (fixed) + M1–M5 with negative tests |
+| META_AUDIT.md | FLW-META-001…010 + recursion termination |
+| FALSIFIABILITY_ENGINE.md | Independent predicate analyzer |
+| CANARY_SUITE.md | Hidden rotating canary protocol |
+| DUAL_MONITOR.md | Agreement / disagreement protocol |
+| TRUST_ANCHOR.md | Merkle + RFC 3161 + fail-closed |
+| AUDIT_PROCEDURE.md | Schema-bound pre/in/post-flight |
+| ACCEPTANCE_TESTS_v2.md | Full matrix covering every D-item |
+| CDC.md | Carbon-Dating Changelog + worked v1→v2 sample |
+| ROADMAP.md | Phased plan with exit criteria |
+| SELF_AUDIT_v2.md | Weakest rows, weakest invariants, single critical assumption |
 
-| File | Contents |
-|------|----------|
-| [DOCTRINE.md](DOCTRINE.md) | Doctrine restatement (≤5 lines) |
-| [FLAW_TABLE.md](FLAW_TABLE.md) | 42 distinct flaw classes with executable falsifiable checks |
-| [AUDIT_LOG_SCHEMA.md](AUDIT_LOG_SCHEMA.md) | Append-only event schema + field-level specification |
-| [INVARIANTS.md](INVARIANTS.md) | Formal invariants I1–I6 with detection queries and remediation |
-| [AUDIT_PROCEDURE.md](AUDIT_PROCEDURE.md) | Numbered pre-flight / in-flight / post-flight procedure |
-| [ACCEPTANCE_TESTS.md](ACCEPTANCE_TESTS.md) | Fault-injection matrix + three adversarial cases |
-| [SELF_AUDIT.md](SELF_AUDIT.md) | Three weakest rows and why |
-
-## Severity Rubric (strict)
-
-- **S0** — Irreversible harm or safety-critical
-- **S1** — Financial/data loss, silent
-- **S2** — Correctness degradation, recoverable
-- **S3** — Efficiency / observability loss
-- **S4** — Cosmetic
-
-## Usage
-
-An independent engineering team should be able to implement the audit system and adjudicate every flaw entry without further clarification from the author.
+## Quality Bar
+An adversarial reviewer will find no unclosed defect, no invariant without a negative test, no self-declared falsifiability, no null caps, no unbounded “eventually,” and no changelog entry lacking three time sources or a discordance policy.
 
 ## License
-
-MIT (or your preferred license). This is a specification, not executable code. Implement at your own risk; the invariants are the contract.
+MIT.
