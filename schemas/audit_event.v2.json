@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://ljrseals-dev.github.io/boy-scouts-agent-audit/schemas/audit_event.v2.json",
+  "$id": "https://raw.githubusercontent.com/ljrseals-dev/boy-scouts-agent-audit/main/schemas/audit_event.v2.json",
   "title": "Loop Audit Event v2.0",
   "type": "object",
   "required": [
@@ -107,81 +107,32 @@
       "pattern": "^[a-f0-9]{64}$"
     },
     "tool_call_id": {
-      "type": [
-        "string",
-        "integer",
-        "number",
-        "boolean",
-        "object",
-        "array",
-        "null"
-      ]
+      "type": "string",
+      "minLength": 1
     },
     "verify_id": {
-      "type": [
-        "string",
-        "integer",
-        "number",
-        "boolean",
-        "object",
-        "array",
-        "null"
-      ]
+      "type": "string",
+      "minLength": 1
     },
     "predicate_id": {
-      "type": [
-        "string",
-        "integer",
-        "number",
-        "boolean",
-        "object",
-        "array",
-        "null"
-      ]
+      "type": "string",
+      "minLength": 1
     },
     "output_hash": {
-      "type": [
-        "string",
-        "integer",
-        "number",
-        "boolean",
-        "object",
-        "array",
-        "null"
-      ]
+      "type": "string",
+      "minLength": 1
     },
     "artifact_hash": {
-      "type": [
-        "string",
-        "integer",
-        "number",
-        "boolean",
-        "object",
-        "array",
-        "null"
-      ]
+      "type": "string",
+      "minLength": 1
     },
     "idempotency_key": {
-      "type": [
-        "string",
-        "integer",
-        "number",
-        "boolean",
-        "object",
-        "array",
-        "null"
-      ]
+      "type": "string",
+      "minLength": 1
     },
     "breached_cap": {
-      "type": [
-        "string",
-        "integer",
-        "number",
-        "boolean",
-        "object",
-        "array",
-        "null"
-      ]
+      "type": "string",
+      "minLength": 1
     },
     "monitor_attestations": {
       "type": "array",
@@ -216,481 +167,176 @@
           }
         },
         "additionalProperties": false
-      },
-      "minItems": 0
+      }
     },
     "disagreement_id": {
-      "type": [
-        "string",
-        "integer",
-        "number",
-        "boolean",
-        "object",
-        "array",
-        "null"
-      ]
+      "type": "string",
+      "minLength": 1
     },
     "source_verify_id": {
-      "type": [
-        "string",
-        "integer",
-        "number",
-        "boolean",
-        "object",
-        "array",
-        "null"
-      ]
+      "type": "string",
+      "minLength": 1
     },
     "half_life_ms": {
-      "type": [
-        "string",
-        "integer",
-        "number",
-        "boolean",
-        "object",
-        "array",
-        "null"
-      ]
+      "type": "integer",
+      "minimum": 0
     },
     "next_revalidation": {
-      "type": [
-        "string",
-        "integer",
-        "number",
-        "boolean",
-        "object",
-        "array",
-        "null"
-      ]
+      "type": "integer",
+      "minimum": 0
     },
     "decay_status": {
-      "type": [
-        "string",
-        "integer",
-        "number",
-        "boolean",
-        "object",
-        "array",
-        "null"
-      ]
+      "type": "string",
+      "minLength": 1
     },
     "oracle_id": {
-      "type": [
-        "string",
-        "integer",
-        "number",
-        "boolean",
-        "object",
-        "array",
-        "null"
-      ]
+      "type": "string",
+      "minLength": 1
     },
     "expires_at": {
-      "type": [
-        "string",
-        "integer",
-        "number",
-        "boolean",
-        "object",
-        "array",
-        "null"
-      ]
+      "type": "string",
+      "minLength": 1
     },
     "nonce": {
-      "type": [
-        "string",
-        "integer",
-        "number",
-        "boolean",
-        "object",
-        "array",
-        "null"
-      ]
+      "type": "string",
+      "minLength": 1
     },
     "expected_verdict": {
-      "type": [
-        "string",
-        "integer",
-        "number",
-        "boolean",
-        "object",
-        "array",
-        "null"
-      ]
+      "type": "string",
+      "minLength": 1
     },
     "actual_verdict": {
-      "type": [
-        "string",
-        "integer",
-        "number",
-        "boolean",
-        "object",
-        "array",
-        "null"
-      ]
+      "type": "string",
+      "minLength": 1
     },
     "suite_hash": {
-      "type": [
-        "string",
-        "integer",
-        "number",
-        "boolean",
-        "object",
-        "array",
-        "null"
-      ]
+      "type": "string",
+      "minLength": 1
     },
     "merkle_root": {
-      "type": [
-        "string",
-        "integer",
-        "number",
-        "boolean",
-        "object",
-        "array",
-        "null"
-      ]
+      "type": "string",
+      "minLength": 1
     },
     "external_timestamp": {
-      "type": [
-        "string",
-        "integer",
-        "number",
-        "boolean",
-        "object",
-        "array",
-        "null"
-      ]
+      "type": "string",
+      "minLength": 1
     },
     "transparency_log_proof": {
-      "type": [
-        "string",
-        "integer",
-        "number",
-        "boolean",
-        "object",
-        "array",
-        "null"
-      ]
+      "type": "string",
+      "minLength": 1
     },
     "parent_hash": {
-      "type": [
-        "string",
-        "integer",
-        "number",
-        "boolean",
-        "object",
-        "array",
-        "null"
-      ]
+      "type": "string",
+      "minLength": 1
     },
     "goal_attestation": {
-      "type": [
-        "string",
-        "integer",
-        "number",
-        "boolean",
-        "object",
-        "array",
-        "null"
-      ]
+      "type": "string",
+      "minLength": 1
     },
     "private_trace": {
-      "type": [
-        "string",
-        "integer",
-        "number",
-        "boolean",
-        "object",
-        "array",
-        "null"
-      ]
+      "type": "string",
+      "minLength": 1
     },
     "falsifiable": {
-      "type": [
-        "string",
-        "integer",
-        "number",
-        "boolean",
-        "object",
-        "array",
-        "null"
-      ]
+      "type": "boolean"
     },
     "predicate_type": {
-      "type": [
-        "string",
-        "integer",
-        "number",
-        "boolean",
-        "object",
-        "array",
-        "null"
-      ]
+      "type": "string",
+      "minLength": 1
     },
     "verdict": {
-      "type": [
-        "string",
-        "integer",
-        "number",
-        "boolean",
-        "object",
-        "array",
-        "null"
-      ]
+      "type": "string",
+      "minLength": 1
     },
     "status": {
-      "type": [
-        "string",
-        "integer",
-        "number",
-        "boolean",
-        "object",
-        "array",
-        "null"
-      ]
+      "type": "string",
+      "minLength": 1
     },
     "monitor_id": {
-      "type": [
-        "string",
-        "integer",
-        "number",
-        "boolean",
-        "object",
-        "array",
-        "null"
-      ]
+      "type": "string",
+      "minLength": 1
     },
     "deployment_id": {
-      "type": [
-        "string",
-        "integer",
-        "number",
-        "boolean",
-        "object",
-        "array",
-        "null"
-      ]
+      "type": "string",
+      "minLength": 1
     },
     "code_lineage": {
-      "type": [
-        "string",
-        "integer",
-        "number",
-        "boolean",
-        "object",
-        "array",
-        "null"
-      ]
+      "type": "string",
+      "minLength": 1
     },
     "value": {
-      "type": [
-        "string",
-        "integer",
-        "number",
-        "boolean",
-        "object",
-        "array",
-        "null"
-      ]
+      "type": "number"
     },
     "limit": {
-      "type": [
-        "string",
-        "integer",
-        "number",
-        "boolean",
-        "object",
-        "array",
-        "null"
-      ]
+      "type": "number"
     },
     "effect_id": {
-      "type": [
-        "string",
-        "integer",
-        "number",
-        "boolean",
-        "object",
-        "array",
-        "null"
-      ]
+      "type": "string",
+      "minLength": 1
     },
     "attempt": {
-      "type": [
-        "string",
-        "integer",
-        "number",
-        "boolean",
-        "object",
-        "array",
-        "null"
-      ]
+      "type": "integer",
+      "minimum": 0
     },
     "retry_count": {
-      "type": [
-        "string",
-        "integer",
-        "number",
-        "boolean",
-        "object",
-        "array",
-        "null"
-      ]
+      "type": "integer",
+      "minimum": 0
     },
     "token_count": {
-      "type": [
-        "string",
-        "integer",
-        "number",
-        "boolean",
-        "object",
-        "array",
-        "null"
-      ]
+      "type": "integer",
+      "minimum": 0
     },
     "cost_usd": {
-      "type": [
-        "string",
-        "integer",
-        "number",
-        "boolean",
-        "object",
-        "array",
-        "null"
-      ]
+      "type": "number",
+      "minimum": 0
     },
     "elapsed_ms": {
-      "type": [
-        "string",
-        "integer",
-        "number",
-        "boolean",
-        "object",
-        "array",
-        "null"
-      ]
+      "type": "integer",
+      "minimum": 0
     },
     "fanout": {
-      "type": [
-        "string",
-        "integer",
-        "number",
-        "boolean",
-        "object",
-        "array",
-        "null"
-      ]
+      "type": "integer",
+      "minimum": 0
     },
     "event_count": {
-      "type": [
-        "string",
-        "integer",
-        "number",
-        "boolean",
-        "object",
-        "array",
-        "null"
-      ]
+      "type": "integer",
+      "minimum": 0
     },
     "stratum_parent_hash": {
-      "type": [
-        "string",
-        "integer",
-        "number",
-        "boolean",
-        "object",
-        "array",
-        "null"
-      ]
+      "type": "string",
+      "minLength": 1
     },
     "tsa_token": {
-      "type": [
-        "string",
-        "integer",
-        "number",
-        "boolean",
-        "object",
-        "array",
-        "null"
-      ]
+      "type": "string",
+      "minLength": 1
     },
     "transparency_log_id": {
-      "type": [
-        "string",
-        "integer",
-        "number",
-        "boolean",
-        "object",
-        "array",
-        "null"
-      ]
+      "type": "string",
+      "minLength": 1
     },
     "inclusion_proof": {
-      "type": [
-        "string",
-        "integer",
-        "number",
-        "boolean",
-        "object",
-        "array",
-        "null"
-      ]
+      "type": "string",
+      "minLength": 1
     },
     "rule_id": {
-      "type": [
-        "string",
-        "integer",
-        "number",
-        "boolean",
-        "object",
-        "array",
-        "null"
-      ]
+      "type": "string",
+      "minLength": 1
     },
     "rule_text": {
-      "type": [
-        "string",
-        "integer",
-        "number",
-        "boolean",
-        "object",
-        "array",
-        "null"
-      ]
+      "type": "string",
+      "minLength": 1
     },
     "revalidation_result": {
-      "type": [
-        "string",
-        "integer",
-        "number",
-        "boolean",
-        "object",
-        "array",
-        "null"
-      ]
+      "type": "string",
+      "minLength": 1
     },
     "decision": {
-      "type": [
-        "string",
-        "integer",
-        "number",
-        "boolean",
-        "object",
-        "array",
-        "null"
-      ]
+      "type": "string",
+      "minLength": 1
     },
     "reason": {
-      "type": [
-        "string",
-        "integer",
-        "number",
-        "boolean",
-        "object",
-        "array",
-        "null"
-      ]
+      "type": "string",
+      "minLength": 1
     },
     "caps": {
       "type": "object",
