@@ -1,6 +1,11 @@
 from __future__ import annotations
 
+import json
+import subprocess
+import sys
+import tempfile
 import unittest
+from pathlib import Path
 from datetime import datetime, timezone
 
 from audit_core import AuditViolation, check_invariants, seal_event, verify_hash_chain
@@ -140,6 +145,26 @@ class AuditCoreTests(unittest.TestCase):
         caps["max_retries"] = "unlimited"
         events = [ev("loop.start", 1, caps=caps)]
         self.assertIn("I5", self.codes(events))
+
+
+    def test_cli_verifies_sealed_jsonl_event_file(self):
+        events = safe_loop()
+        sealed = []
+        previous = None
+        for event in events:
+            item = seal_event(event, previous)
+            sealed.append(item)
+            previous = item["event_hash"]
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / "events.jsonl"
+            path.write_text("".join(json.dumps(item) + "\\n" for item in sealed), encoding="utf-8")
+            result = subprocess.run(
+                [sys.executable, str(Path(__file__).resolve().parents[1] / "scripts/audit_events.py"),
+                 str(path)],
+                capture_output=True, text=True, check=False,
+            )
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertIn('"status": "PASS"', result.stdout)
 
     def test_valid_minimal_safety_loop_has_no_findings(self):
         self.assertEqual(check_invariants(safe_loop()), [])
