@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 from collections import defaultdict
 from datetime import datetime, timezone
 from typing import Any, Iterable
@@ -57,7 +58,7 @@ def _time(event: dict[str, Any]) -> datetime:
 
 def _metric(event: dict[str, Any], name: str) -> float:
     value = event.get(name, 0)
-    if isinstance(value, bool) or not isinstance(value, (int, float)) or value < 0:
+    if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) or value < 0:
         raise AuditViolation(f"{name} must be a non-negative number")
     return float(value)
 
@@ -100,9 +101,9 @@ def check_invariants(events: Iterable[dict[str, Any]],
                 terminals[str(call_id)].append(event)
     for call_id, call_events in calls.items():
         terminal_count = len(terminals.get(call_id, []))
-        if terminal_count != 1:
+        if terminal_count != 1 or len(call_events) != 1:
             findings.append(_finding("I1", call_events[0],
-                                     f"tool_call_id {call_id} has {terminal_count} terminal events"))
+                                     f"tool_call_id {call_id} has {len(call_events)} calls and {terminal_count} terminal events"))
     for call_id, terminal_events in terminals.items():
         if call_id not in calls:
             findings.append(_finding("I1", terminal_events[0],
@@ -213,7 +214,7 @@ def check_invariants(events: Iterable[dict[str, Any]],
         caps = loop.get("caps")
         if (not isinstance(caps, dict) or any(
                 cap not in caps or isinstance(caps[cap], bool)
-                or not isinstance(caps[cap], (int, float)) or caps[cap] <= 0
+                or not isinstance(caps[cap], (int, float)) or not math.isfinite(caps[cap]) or caps[cap] <= 0
                 for cap in CAPS
         )):
             continue
@@ -266,6 +267,8 @@ def check_invariants(events: Iterable[dict[str, Any]],
 
     # I6: reconciliation is due by the earlier of its deadline or loop termination.
     instant = as_of or datetime.now(timezone.utc)
+    if instant.tzinfo is None:
+        raise AuditViolation("as_of must include a timezone")
     for result in rows:
         if result["event_type"] != "verify.result" or result.get("status") != "fail":
             continue
@@ -273,7 +276,11 @@ def check_invariants(events: Iterable[dict[str, Any]],
                      if e["event_type"] == "loop.start"), None)
         if not loop or not isinstance(loop.get("caps"), dict):
             continue
-        deadline = _time(result).timestamp() + loop["caps"].get("reconciliation_ms", 0) / 1000
+        reconciliation_ms = loop["caps"].get("reconciliation_ms")
+        if (isinstance(reconciliation_ms, bool) or not isinstance(reconciliation_ms, (int, float))
+                or not math.isfinite(reconciliation_ms) or reconciliation_ms <= 0):
+            continue
+        deadline = _time(result).timestamp() + reconciliation_ms / 1000
         reconciled = any(
             e["event_type"] in {"rule.learned", "rule.declined"}
             and e.get("source_verify_id") == result.get("verify_id")
