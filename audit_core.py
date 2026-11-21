@@ -283,7 +283,7 @@ def check_invariants(events: Iterable[dict[str, Any]],
         )
         termination_times = [
             _time(e).timestamp() for e in grouped[str(result["correlation_id"])]
-            if e["event_type"] == "loop.terminate"
+            if e["event_type"] == "loop.terminate" and _time(e) >= _time(result)
         ]
         boundary = min([deadline, *termination_times])
         if not reconciled and instant.timestamp() > boundary:
