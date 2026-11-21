@@ -1,36 +1,954 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://example.com/schemas/audit_event.v2.json",
+  "$id": "https://ljrseals-dev.github.io/boy-scouts-agent-audit/schemas/audit_event.v2.json",
   "title": "Loop Audit Event v2.0",
   "type": "object",
-  "required": ["event_id", "event_type", "timestamp", "correlation_id", "issuer_id", "issuer_type", "schema_version", "event_hash", "stratum_id"],
+  "required": [
+    "event_id",
+    "event_type",
+    "timestamp",
+    "correlation_id",
+    "issuer_id",
+    "issuer_type",
+    "schema_version",
+    "event_hash",
+    "stratum_id"
+  ],
   "properties": {
-    "event_id": { "type": "string", "format": "uuid" },
+    "event_id": {
+      "type": "string",
+      "format": "uuid"
+    },
     "event_type": {
       "type": "string",
       "enum": [
-        "loop.start", "predicate.registered", "predicate.validated", "check.registered",
-        "plan.emit", "tool.call", "tool.result", "model.call", "model.result",
-        "verify.attempt", "verify.result", "retry.scheduled",
-        "rule.learned", "rule.declined", "rule.revalidated", "rule.retired",
-        "oracle.attested", "monitor.attested", "monitor.disagreement",
-        "circuit_break", "policy.decision", "canary.injected", "canary.result",
-        "log.notarized", "loop.terminate"
+        "loop.start",
+        "predicate.registered",
+        "predicate.validated",
+        "check.registered",
+        "plan.emit",
+        "tool.call",
+        "tool.result",
+        "model.call",
+        "model.result",
+        "verify.attempt",
+        "verify.result",
+        "retry.scheduled",
+        "rule.learned",
+        "rule.declined",
+        "rule.revalidated",
+        "rule.retired",
+        "oracle.attested",
+        "monitor.attested",
+        "monitor.disagreement",
+        "circuit_break",
+        "policy.decision",
+        "canary.injected",
+        "canary.result",
+        "log.notarized",
+        "loop.terminate"
       ]
     },
-    "timestamp": { "type": "string", "format": "date-time" },
-    "correlation_id": { "type": "string", "format": "uuid" },
-    "parent_event_id": { "type": ["string", "null"], "format": "uuid" },
-    "issuer_id": { "type": "string" },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "correlation_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "parent_event_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uuid"
+    },
+    "issuer_id": {
+      "type": "string",
+      "minLength": 1
+    },
     "issuer_type": {
       "type": "string",
-      "enum": ["model", "tool", "orchestrator", "human", "system", "monitor", "oracle", "analyzer"]
+      "enum": [
+        "model",
+        "tool",
+        "orchestrator",
+        "human",
+        "system",
+        "monitor",
+        "oracle",
+        "analyzer"
+      ]
     },
-    "schema_version": { "const": "2.0.0" },
-    "event_hash": { "type": "string" },
-    "previous_hash": { "type": ["string", "null"] },
-    "stratum_id": { "type": "string" },
-    "lineage_hash": { "type": ["string", "null"] }
+    "schema_version": {
+      "const": "2.0.0"
+    },
+    "event_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "previous_hash": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "stratum_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "lineage_hash": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "tool_call_id": {
+      "type": [
+        "string",
+        "integer",
+        "number",
+        "boolean",
+        "object",
+        "array",
+        "null"
+      ]
+    },
+    "verify_id": {
+      "type": [
+        "string",
+        "integer",
+        "number",
+        "boolean",
+        "object",
+        "array",
+        "null"
+      ]
+    },
+    "predicate_id": {
+      "type": [
+        "string",
+        "integer",
+        "number",
+        "boolean",
+        "object",
+        "array",
+        "null"
+      ]
+    },
+    "output_hash": {
+      "type": [
+        "string",
+        "integer",
+        "number",
+        "boolean",
+        "object",
+        "array",
+        "null"
+      ]
+    },
+    "artifact_hash": {
+      "type": [
+        "string",
+        "integer",
+        "number",
+        "boolean",
+        "object",
+        "array",
+        "null"
+      ]
+    },
+    "idempotency_key": {
+      "type": [
+        "string",
+        "integer",
+        "number",
+        "boolean",
+        "object",
+        "array",
+        "null"
+      ]
+    },
+    "breached_cap": {
+      "type": [
+        "string",
+        "integer",
+        "number",
+        "boolean",
+        "object",
+        "array",
+        "null"
+      ]
+    },
+    "monitor_attestations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "monitor_id",
+          "deployment_id",
+          "code_lineage"
+        ],
+        "properties": {
+          "monitor_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "deployment_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "code_lineage": {
+            "type": "string",
+            "minLength": 1
+          },
+          "breached_cap": {
+            "type": "string"
+          },
+          "value": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          }
+        },
+        "additionalProperties": false
+      },
+      "minItems": 0
+    },
+    "disagreement_id": {
+      "type": [
+        "string",
+        "integer",
+        "number",
+        "boolean",
+        "object",
+        "array",
+        "null"
+      ]
+    },
+    "source_verify_id": {
+      "type": [
+        "string",
+        "integer",
+        "number",
+        "boolean",
+        "object",
+        "array",
+        "null"
+      ]
+    },
+    "half_life_ms": {
+      "type": [
+        "string",
+        "integer",
+        "number",
+        "boolean",
+        "object",
+        "array",
+        "null"
+      ]
+    },
+    "next_revalidation": {
+      "type": [
+        "string",
+        "integer",
+        "number",
+        "boolean",
+        "object",
+        "array",
+        "null"
+      ]
+    },
+    "decay_status": {
+      "type": [
+        "string",
+        "integer",
+        "number",
+        "boolean",
+        "object",
+        "array",
+        "null"
+      ]
+    },
+    "oracle_id": {
+      "type": [
+        "string",
+        "integer",
+        "number",
+        "boolean",
+        "object",
+        "array",
+        "null"
+      ]
+    },
+    "expires_at": {
+      "type": [
+        "string",
+        "integer",
+        "number",
+        "boolean",
+        "object",
+        "array",
+        "null"
+      ]
+    },
+    "nonce": {
+      "type": [
+        "string",
+        "integer",
+        "number",
+        "boolean",
+        "object",
+        "array",
+        "null"
+      ]
+    },
+    "expected_verdict": {
+      "type": [
+        "string",
+        "integer",
+        "number",
+        "boolean",
+        "object",
+        "array",
+        "null"
+      ]
+    },
+    "actual_verdict": {
+      "type": [
+        "string",
+        "integer",
+        "number",
+        "boolean",
+        "object",
+        "array",
+        "null"
+      ]
+    },
+    "suite_hash": {
+      "type": [
+        "string",
+        "integer",
+        "number",
+        "boolean",
+        "object",
+        "array",
+        "null"
+      ]
+    },
+    "merkle_root": {
+      "type": [
+        "string",
+        "integer",
+        "number",
+        "boolean",
+        "object",
+        "array",
+        "null"
+      ]
+    },
+    "external_timestamp": {
+      "type": [
+        "string",
+        "integer",
+        "number",
+        "boolean",
+        "object",
+        "array",
+        "null"
+      ]
+    },
+    "transparency_log_proof": {
+      "type": [
+        "string",
+        "integer",
+        "number",
+        "boolean",
+        "object",
+        "array",
+        "null"
+      ]
+    },
+    "parent_hash": {
+      "type": [
+        "string",
+        "integer",
+        "number",
+        "boolean",
+        "object",
+        "array",
+        "null"
+      ]
+    },
+    "goal_attestation": {
+      "type": [
+        "string",
+        "integer",
+        "number",
+        "boolean",
+        "object",
+        "array",
+        "null"
+      ]
+    },
+    "private_trace": {
+      "type": [
+        "string",
+        "integer",
+        "number",
+        "boolean",
+        "object",
+        "array",
+        "null"
+      ]
+    },
+    "falsifiable": {
+      "type": [
+        "string",
+        "integer",
+        "number",
+        "boolean",
+        "object",
+        "array",
+        "null"
+      ]
+    },
+    "predicate_type": {
+      "type": [
+        "string",
+        "integer",
+        "number",
+        "boolean",
+        "object",
+        "array",
+        "null"
+      ]
+    },
+    "verdict": {
+      "type": [
+        "string",
+        "integer",
+        "number",
+        "boolean",
+        "object",
+        "array",
+        "null"
+      ]
+    },
+    "status": {
+      "type": [
+        "string",
+        "integer",
+        "number",
+        "boolean",
+        "object",
+        "array",
+        "null"
+      ]
+    },
+    "monitor_id": {
+      "type": [
+        "string",
+        "integer",
+        "number",
+        "boolean",
+        "object",
+        "array",
+        "null"
+      ]
+    },
+    "deployment_id": {
+      "type": [
+        "string",
+        "integer",
+        "number",
+        "boolean",
+        "object",
+        "array",
+        "null"
+      ]
+    },
+    "code_lineage": {
+      "type": [
+        "string",
+        "integer",
+        "number",
+        "boolean",
+        "object",
+        "array",
+        "null"
+      ]
+    },
+    "value": {
+      "type": [
+        "string",
+        "integer",
+        "number",
+        "boolean",
+        "object",
+        "array",
+        "null"
+      ]
+    },
+    "limit": {
+      "type": [
+        "string",
+        "integer",
+        "number",
+        "boolean",
+        "object",
+        "array",
+        "null"
+      ]
+    },
+    "effect_id": {
+      "type": [
+        "string",
+        "integer",
+        "number",
+        "boolean",
+        "object",
+        "array",
+        "null"
+      ]
+    },
+    "attempt": {
+      "type": [
+        "string",
+        "integer",
+        "number",
+        "boolean",
+        "object",
+        "array",
+        "null"
+      ]
+    },
+    "retry_count": {
+      "type": [
+        "string",
+        "integer",
+        "number",
+        "boolean",
+        "object",
+        "array",
+        "null"
+      ]
+    },
+    "token_count": {
+      "type": [
+        "string",
+        "integer",
+        "number",
+        "boolean",
+        "object",
+        "array",
+        "null"
+      ]
+    },
+    "cost_usd": {
+      "type": [
+        "string",
+        "integer",
+        "number",
+        "boolean",
+        "object",
+        "array",
+        "null"
+      ]
+    },
+    "elapsed_ms": {
+      "type": [
+        "string",
+        "integer",
+        "number",
+        "boolean",
+        "object",
+        "array",
+        "null"
+      ]
+    },
+    "fanout": {
+      "type": [
+        "string",
+        "integer",
+        "number",
+        "boolean",
+        "object",
+        "array",
+        "null"
+      ]
+    },
+    "event_count": {
+      "type": [
+        "string",
+        "integer",
+        "number",
+        "boolean",
+        "object",
+        "array",
+        "null"
+      ]
+    },
+    "stratum_parent_hash": {
+      "type": [
+        "string",
+        "integer",
+        "number",
+        "boolean",
+        "object",
+        "array",
+        "null"
+      ]
+    },
+    "tsa_token": {
+      "type": [
+        "string",
+        "integer",
+        "number",
+        "boolean",
+        "object",
+        "array",
+        "null"
+      ]
+    },
+    "transparency_log_id": {
+      "type": [
+        "string",
+        "integer",
+        "number",
+        "boolean",
+        "object",
+        "array",
+        "null"
+      ]
+    },
+    "inclusion_proof": {
+      "type": [
+        "string",
+        "integer",
+        "number",
+        "boolean",
+        "object",
+        "array",
+        "null"
+      ]
+    },
+    "rule_id": {
+      "type": [
+        "string",
+        "integer",
+        "number",
+        "boolean",
+        "object",
+        "array",
+        "null"
+      ]
+    },
+    "rule_text": {
+      "type": [
+        "string",
+        "integer",
+        "number",
+        "boolean",
+        "object",
+        "array",
+        "null"
+      ]
+    },
+    "revalidation_result": {
+      "type": [
+        "string",
+        "integer",
+        "number",
+        "boolean",
+        "object",
+        "array",
+        "null"
+      ]
+    },
+    "decision": {
+      "type": [
+        "string",
+        "integer",
+        "number",
+        "boolean",
+        "object",
+        "array",
+        "null"
+      ]
+    },
+    "reason": {
+      "type": [
+        "string",
+        "integer",
+        "number",
+        "boolean",
+        "object",
+        "array",
+        "null"
+      ]
+    },
+    "caps": {
+      "type": "object",
+      "required": [
+        "token_budget",
+        "cost_usd",
+        "wall_clock_ms",
+        "max_retries",
+        "max_fanout",
+        "reconciliation_ms"
+      ],
+      "properties": {
+        "token_budget": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "cost_usd": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "wall_clock_ms": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_retries": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_fanout": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "reconciliation_ms": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "additionalProperties": false
+    }
   },
-  "additionalProperties": true
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "loop.start"
+          }
+        },
+        "required": [
+          "event_type"
+        ]
+      },
+      "then": {
+        "required": [
+          "caps"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "tool.call"
+          }
+        },
+        "required": [
+          "event_type"
+        ]
+      },
+      "then": {
+        "required": [
+          "tool_call_id"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "tool.result"
+          }
+        },
+        "required": [
+          "event_type"
+        ]
+      },
+      "then": {
+        "required": [
+          "tool_call_id"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "circuit_break"
+          }
+        },
+        "required": [
+          "event_type"
+        ]
+      },
+      "then": {
+        "required": [
+          "breached_cap"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "check.registered"
+          }
+        },
+        "required": [
+          "event_type"
+        ]
+      },
+      "then": {
+        "required": [
+          "predicate_id",
+          "falsifiable",
+          "predicate_type"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "predicate.validated"
+          }
+        },
+        "required": [
+          "event_type"
+        ]
+      },
+      "then": {
+        "required": [
+          "predicate_id",
+          "verdict"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "verify.result"
+          }
+        },
+        "required": [
+          "event_type"
+        ]
+      },
+      "then": {
+        "required": [
+          "verify_id",
+          "status"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "rule.learned"
+          }
+        },
+        "required": [
+          "event_type"
+        ]
+      },
+      "then": {
+        "required": [
+          "source_verify_id",
+          "half_life_ms",
+          "next_revalidation"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "rule.declined"
+          }
+        },
+        "required": [
+          "event_type"
+        ]
+      },
+      "then": {
+        "required": [
+          "source_verify_id"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "canary.injected"
+          }
+        },
+        "required": [
+          "event_type"
+        ]
+      },
+      "then": {
+        "required": [
+          "nonce",
+          "expected_verdict",
+          "oracle_id",
+          "suite_hash"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "canary.result"
+          }
+        },
+        "required": [
+          "event_type"
+        ]
+      },
+      "then": {
+        "required": [
+          "nonce",
+          "actual_verdict",
+          "oracle_id"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "log.notarized"
+          }
+        },
+        "required": [
+          "event_type"
+        ]
+      },
+      "then": {
+        "required": [
+          "merkle_root",
+          "external_timestamp",
+          "transparency_log_proof"
+        ]
+      }
+    }
+  ],
+  "additionalProperties": false
 }
