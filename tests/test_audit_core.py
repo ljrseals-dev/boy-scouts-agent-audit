@@ -177,6 +177,23 @@ class AuditCoreTests(unittest.TestCase):
         ]
         as_of = datetime(2026, 1, 1, 0, 0, 7, tzinfo=timezone.utc)
         self.assertIn("I6", self.codes(events, as_of=as_of))
+    def test_i1_duplicate_call_id_is_detected(self):
+        events = safe_loop() + [
+            ev("tool.call", 4, tool_call_id="t1"),
+            ev("tool.call", 5, tool_call_id="t1"),
+            ev("tool.result", 6, tool_call_id="t1"),
+        ]
+        self.assertIn("I1", self.codes(events))
+
+    def test_non_finite_resource_cap_fails_closed(self):
+        caps = dict(CAPS)
+        caps["cost_usd"] = float("nan")
+        self.assertIn("I5", self.codes([ev("loop.start", 1, caps=caps)]))
+
+    def test_non_finite_usage_metric_is_rejected(self):
+        events = safe_loop() + [ev("tool.result", 4, token_count=float("nan"))]
+        with self.assertRaises(AuditViolation):
+            check_invariants(events, as_of=datetime(2026, 1, 1, 0, 0, 9, tzinfo=timezone.utc))
     def test_valid_minimal_safety_loop_has_no_findings(self):
         self.assertEqual(check_invariants(safe_loop(), as_of=datetime(2026, 1, 1, 0, 0, 9, tzinfo=timezone.utc)), [])
 
