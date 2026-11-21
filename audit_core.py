@@ -252,8 +252,19 @@ def check_invariants(events: Iterable[dict[str, Any]],
                     f"{cap} crossed its cap without a prior or concurrent circuit_break"
                 ))
 
-    # I6: every failed verification is reconciled by a rule or loop termination
-    # before the reconciliation deadline (or as_of, if still running).
+        # Detect silent loops that exceed wall-clock even when no new event arrives.
+        terminated = [e for e in scoped if e["event_type"] == "loop.terminate"]
+        end_time = min((_time(e) for e in terminated), default=(as_of or datetime.now(timezone.utc)))
+        if (end_time - _time(loop)).total_seconds() * 1000 > caps["wall_clock_ms"]:
+            deadline = _time(loop).timestamp() + caps["wall_clock_ms"] / 1000
+            protected = any(
+                e.get("breached_cap") == "wall_clock_ms" and _time(e).timestamp() <= deadline
+                for e in breaks
+            )
+            if not protected:
+                findings.append(_finding("I5", loop, "wall_clock_ms exceeded without a timely circuit_break"))
+
+    # I6: reconciliation is due by the earlier of its deadline or loop termination.
     instant = as_of or datetime.now(timezone.utc)
     for result in rows:
         if result["event_type"] != "verify.result" or result.get("status") != "fail":
@@ -270,11 +281,13 @@ def check_invariants(events: Iterable[dict[str, Any]],
             and _time(e).timestamp() <= deadline
             for e in rows
         )
-        terminated = any(e["event_type"] == "loop.terminate"
-                         and e.get("correlation_id") == result.get("correlation_id")
-                         and _time(e).timestamp() <= deadline for e in rows)
-        if not reconciled and not terminated and instant.timestamp() > deadline:
-            findings.append(_finding("I6", result, "failed verification missed reconciliation deadline"))
+        termination_times = [
+            _time(e).timestamp() for e in grouped[str(result["correlation_id"])]
+            if e["event_type"] == "loop.terminate"
+        ]
+        boundary = min([deadline, *termination_times])
+        if not reconciled and instant.timestamp() > boundary:
+            findings.append(_finding("I6", result, "failed verification missed reconciliation/termination deadline"))
 
     # M5: active policy decisions cannot cite a rule beyond twice its half-life.
     learned = {e.get("rule_id"): e for e in rows if e["event_type"] == "rule.learned" and e.get("rule_id")}
