@@ -96,7 +96,7 @@ def validate(root: Path) -> list[str]:
             definition = cap_props.get(name, {})
             if definition.get("type") not in ("integer", "number"):
                 errors.append(f"caps.{name} must be numeric and non-null")
-            if definition.get("minimum", 0) <= 0:
+            if max(definition.get("minimum", 0), definition.get("exclusiveMinimum", 0)) <= 0:
                 errors.append(f"caps.{name} must have a positive minimum")
         if caps.get("additionalProperties") is not False:
             errors.append("caps.additionalProperties must be false")
