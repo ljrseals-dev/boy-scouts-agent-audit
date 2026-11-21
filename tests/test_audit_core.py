@@ -39,7 +39,7 @@ def safe_loop():
 
 class AuditCoreTests(unittest.TestCase):
     def codes(self, events, as_of=None):
-        return {finding["code"] for finding in check_invariants(events, as_of=as_of)}
+        return {finding["code"] for finding in check_invariants(events, as_of=as_of or datetime(2026, 1, 1, 0, 0, 9, tzinfo=timezone.utc))}
 
     def test_hash_chain_seals_and_detects_tampering(self):
         first = seal_event(ev("loop.start", 1), None)
@@ -148,7 +148,7 @@ class AuditCoreTests(unittest.TestCase):
 
 
     def test_cli_verifies_sealed_jsonl_event_file(self):
-        events = safe_loop()
+        events = safe_loop() + [ev("loop.terminate", 9)]
         sealed = []
         previous = None
         for event in events:
@@ -166,8 +166,19 @@ class AuditCoreTests(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
             self.assertIn('"status": "PASS"', result.stdout)
 
+    def test_i5_silent_loop_exceeding_wall_clock_is_detected(self):
+        as_of = datetime(2026, 1, 1, 0, 0, 14, tzinfo=timezone.utc)
+        self.assertIn("I5", self.codes(safe_loop(), as_of=as_of))
+
+    def test_i6_termination_does_not_replace_required_reconciliation(self):
+        events = safe_loop() + [
+            ev("verify.result", 4, verify_id="v1", status="fail"),
+            ev("loop.terminate", 5),
+        ]
+        as_of = datetime(2026, 1, 1, 0, 0, 7, tzinfo=timezone.utc)
+        self.assertIn("I6", self.codes(events, as_of=as_of))
     def test_valid_minimal_safety_loop_has_no_findings(self):
-        self.assertEqual(check_invariants(safe_loop()), [])
+        self.assertEqual(check_invariants(safe_loop(), as_of=datetime(2026, 1, 1, 0, 0, 9, tzinfo=timezone.utc)), [])
 
 if __name__ == "__main__":
     unittest.main()
