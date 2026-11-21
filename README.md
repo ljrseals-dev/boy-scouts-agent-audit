@@ -1,31 +1,33 @@
 # Boy Scouts Loop Audit System — Specification v2.0
 
-Closes every defect in the meta-audit register (D1–D14) and implements the full roadmap (R1–R11), including the Carbon-Dating Changelog protocol.
+This repository contains the v2.0 audit doctrine and an executable **schema-coherence gate**. The gate is intentionally narrower than the full runtime protocol: it checks that documented event vocabulary, event envelope fields, required bounded caps, and selected event-specific payload contracts agree with the JSON Schema.
 
-## Doctrine
-See [DOCTRINE.md](DOCTRINE.md).
+## Doctrine and specifications
+- [Governing doctrine](DOCTRINE.md)
+- [Defect closure register](DEFECT_CLOSURE.md)
+- [Invariants](INVARIANTS.md)
+- [Canary suite specification](CANARY_SUITE.md)
+- [Dual-monitor specification](DUAL_MONITOR.md)
+- [Trust-anchor specification](TRUST_ANCHOR.md)
+- [Acceptance scenario matrix](ACCEPTANCE_TESTS_v2.md)
+- [Carbon-Dating Changelog](CDC.md)
+- [Roadmap](ROADMAP.md)
+- [Self-audit](SELF_AUDIT_v2.md)
 
-## Defect Closure
-See [DEFECT_CLOSURE.md](DEFECT_CLOSURE.md) — every item has a closure mechanism, evidence artifact, and verification query.
+## Executable checks
 
-## Core Artifacts
-| File | Content |
-|------|---------|
-| SCHEMA.md | Corrected event schema (all required types, null caps forbidden) |
-| INVARIANTS.md | I1–I6 (fixed) + M1–M5 with negative tests |
-| META_AUDIT.md | FLW-META-001…010 + recursion termination |
-| FALSIFIABILITY_ENGINE.md | Independent predicate analyzer |
-| CANARY_SUITE.md | Hidden rotating canary protocol |
-| DUAL_MONITOR.md | Agreement / disagreement protocol |
-| TRUST_ANCHOR.md | Merkle + RFC 3161 + fail-closed |
-| AUDIT_PROCEDURE.md | Schema-bound pre/in/post-flight |
-| ACCEPTANCE_TESTS_v2.md | Full matrix covering every D-item |
-| CDC.md | Carbon-Dating Changelog + worked v1→v2 sample |
-| ROADMAP.md | Phased plan with exit criteria |
-| SELF_AUDIT_v2.md | Weakest rows, weakest invariants, single critical assumption |
+Run locally with Python 3.10+ and no third-party packages:
 
-## Quality Bar
-An adversarial reviewer will find no unclosed defect, no invariant without a negative test, no self-declared falsifiability, no null caps, no unbounded “eventually,” and no changelog entry lacking three time sources or a discordance policy.
+```sh
+python scripts/check_schema_coherence.py
+PYTHONPATH=scripts python -m unittest discover -s tests -v
+```
+
+GitHub Actions runs these commands on pushes and pull requests. The negative tests verify that a phantom documented event and a nullable/unbounded cap are rejected.
+
+## Explicit coverage boundary
+
+A passing schema-coherence check does **not** prove runtime enforcement of I1–I6 or M1–M5. This repository does not yet provide production implementations of the hidden canary service, independent falsifiability analyzer, dual-monitor supervisor, append-only event ledger, RFC 3161 client, transparency-log publisher/verifier, or wall-clock circuit breaker. Those are separate roadmap deliverables and must not be represented as implemented merely because their specifications exist.
 
 ## License
 MIT.
