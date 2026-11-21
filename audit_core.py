@@ -211,7 +211,11 @@ def check_invariants(events: Iterable[dict[str, Any]],
             continue
         loop = min(starts, key=_time)
         caps = loop.get("caps")
-        if not isinstance(caps, dict) or any(cap not in caps for cap in CAPS):
+        if (not isinstance(caps, dict) or any(
+                cap not in caps or isinstance(caps[cap], bool)
+                or not isinstance(caps[cap], (int, float)) or caps[cap] <= 0
+                for cap in CAPS
+        )):
             continue
         scoped = [e for e in group if _time(e) >= _time(loop)]
         breaks = [e for e in scoped if e["event_type"] == "circuit_break"]
