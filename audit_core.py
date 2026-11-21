@@ -103,6 +103,7 @@ def check_invariants(events: Iterable[dict[str, Any]],
                 candidate["event_type"] == "predicate.validated"
                 and candidate.get("predicate_id") == event.get("predicate_id")
                 and candidate.get("verdict") == "valid"
+                and candidate.get("correlation_id") == event.get("correlation_id")
                 and _before(candidate, event)
                 for candidate in rows
             )
@@ -121,6 +122,7 @@ def check_invariants(events: Iterable[dict[str, Any]],
                 valid["event_type"] == "predicate.validated"
                 and valid.get("predicate_id") == check.get("predicate_id")
                 and valid.get("verdict") == "valid"
+                and valid.get("correlation_id") == check.get("correlation_id")
                 and _before(valid, check)
                 for valid in rows
             )
@@ -169,6 +171,7 @@ def check_invariants(events: Iterable[dict[str, Any]],
                 item["event_type"] == "oracle.attested"
                 and item.get("oracle_id") == oracle_id
                 and item.get("lineage_hash") == result.get("lineage_hash")
+                and item.get("issuer_type") == "oracle"
                 and _before(item, result)
                 and isinstance(item.get("expires_at"), str)
                 and datetime.fromisoformat(item["expires_at"].replace("Z", "+00:00"))
@@ -190,30 +193,49 @@ def check_invariants(events: Iterable[dict[str, Any]],
         if len(identities) < 2 and not event.get("disagreement_id"):
             findings.append(_finding("M4", event, "circuit_break lacks two distinct monitor attestations"))
 
-    # I5: check observed cumulative metrics against declared loop caps.
+    # I5: identify the first event that crosses each cap. A later break is too late.
     for correlation, group in grouped.items():
         starts = [e for e in group if e["event_type"] == "loop.start"]
         if not starts:
             continue
-        start = min(starts, key=_time)
-        caps = start.get("caps")
+        loop = min(starts, key=_time)
+        caps = loop.get("caps")
         if not isinstance(caps, dict):
             continue
-        breaks = [e for e in group if e["event_type"] == "circuit_break"]
-        metrics = {
-            "token_budget": sum(float(e.get("token_count", 0)) for e in group),
-            "cost_usd": sum(float(e.get("cost_usd", 0)) for e in group),
-            "wall_clock_ms": max(0, int((_time(max(group, key=_time)) - _time(start)).total_seconds() * 1000)),
-            "max_retries": sum(1 for e in group if e["event_type"] == "retry.scheduled"),
-            "max_fanout": max((int(e.get("fanout", 0)) for e in group), default=0),
-        }
-        for cap, metric in metrics.items():
-            if metric > caps.get(cap, float("inf")):
-                covered = any(e.get("breached_cap") == cap and _time(e) <= _time(max(group, key=_time))
-                              for e in breaks)
-                if not covered:
-                    findings.append(_finding("I5", start,
-                                             f"{cap} exceeded ({metric} > {caps[cap]}) without circuit_break"))
+        scoped = [e for e in group if _time(e) >= _time(loop)]
+        breaks = [e for e in scoped if e["event_type"] == "circuit_break"]
+        crossings: dict[str, dict[str, Any]] = {}
+
+        token_total = 0.0
+        cost_total = 0.0
+        retry_total = 0
+        for event in sorted(scoped, key=_time):
+            token_total += float(event.get("token_count", 0))
+            cost_total += float(event.get("cost_usd", 0))
+            if token_total > caps["token_budget"] and "token_budget" not in crossings:
+                crossings["token_budget"] = event
+            if cost_total > caps["cost_usd"] and "cost_usd" not in crossings:
+                crossings["cost_usd"] = event
+            if event["event_type"] == "retry.scheduled":
+                retry_total += 1
+                if retry_total > caps["max_retries"] and "max_retries" not in crossings:
+                    crossings["max_retries"] = event
+            if int(event.get("fanout", 0)) > caps["max_fanout"] and "max_fanout" not in crossings:
+                crossings["max_fanout"] = event
+            elapsed = (_time(event) - _time(loop)).total_seconds() * 1000
+            if elapsed > caps["wall_clock_ms"] and "wall_clock_ms" not in crossings:
+                crossings["wall_clock_ms"] = event
+
+        for cap, crossing in crossings.items():
+            protected = any(
+                event.get("breached_cap") == cap and _time(event) <= _time(crossing)
+                for event in breaks
+            )
+            if not protected:
+                findings.append(_finding(
+                    "I5", crossing,
+                    f"{cap} crossed its cap without a prior or concurrent circuit_break"
+                ))
 
     # I6: every failed verification is reconciled by a rule or loop termination
     # before the reconciliation deadline (or as_of, if still running).
@@ -229,6 +251,7 @@ def check_invariants(events: Iterable[dict[str, Any]],
         reconciled = any(
             e["event_type"] in {"rule.learned", "rule.declined"}
             and e.get("source_verify_id") == result.get("verify_id")
+            and e.get("correlation_id") == result.get("correlation_id")
             and _time(e).timestamp() <= deadline
             for e in rows
         )
