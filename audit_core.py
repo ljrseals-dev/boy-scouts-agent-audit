@@ -41,17 +41,25 @@ def verify_hash_chain(events: Iterable[dict[str, Any]]) -> None:
             raise AuditViolation(f"event {index}: event_hash mismatch")
         previous = event["event_hash"]
 
-def _time(event: dict[str, Any]) -> datetime:
-    value = event.get("timestamp")
+def _parse_time(value: Any) -> datetime:
     if not isinstance(value, str):
-        raise AuditViolation("event timestamp must be an ISO-8601 string")
+        raise AuditViolation("timestamp must be an ISO-8601 string")
     try:
         parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
     except ValueError as exc:
         raise AuditViolation(f"invalid timestamp: {value}") from exc
     if parsed.tzinfo is None:
-        raise AuditViolation("event timestamp must include a timezone")
+        raise AuditViolation("timestamp must include a timezone")
     return parsed.astimezone(timezone.utc)
+
+def _time(event: dict[str, Any]) -> datetime:
+    return _parse_time(event.get("timestamp"))
+
+def _metric(event: dict[str, Any], name: str) -> float:
+    value = event.get(name, 0)
+    if isinstance(value, bool) or not isinstance(value, (int, float)) or value < 0:
+        raise AuditViolation(f"{name} must be a non-negative number")
+    return float(value)
 
 def _before(left: dict[str, Any], right: dict[str, Any]) -> bool:
     return _time(left) < _time(right)
@@ -72,8 +80,8 @@ def check_invariants(events: Iterable[dict[str, Any]],
     for event in rows:
         if not isinstance(event, dict):
             raise AuditViolation("each event must be an object")
-        if not event.get("event_type") or not event.get("correlation_id"):
-            raise AuditViolation("event_type and correlation_id are required")
+        if not isinstance(event.get("event_type"), str) or not isinstance(event.get("correlation_id"), str):
+            raise AuditViolation("event_type and correlation_id must be strings")
         _time(event)
         grouped[str(event["correlation_id"])].append(event)
 
@@ -82,10 +90,14 @@ def check_invariants(events: Iterable[dict[str, Any]],
     terminals: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for event in rows:
         call_id = event.get("tool_call_id")
-        if event["event_type"] == "tool.call" and call_id:
-            calls[str(call_id)].append(event)
-        if event["event_type"] in {"tool.result", "circuit_break"} and call_id:
-            terminals[str(call_id)].append(event)
+        if event["event_type"] == "tool.call":
+            if not call_id:
+                findings.append(_finding("I1", event, "tool.call is missing tool_call_id"))
+            else:
+                calls[str(call_id)].append(event)
+        if event["event_type"] in {"tool.result", "circuit_break"}:
+            if call_id:
+                terminals[str(call_id)].append(event)
     for call_id, call_events in calls.items():
         terminal_count = len(terminals.get(call_id, []))
         if terminal_count != 1:
@@ -173,9 +185,8 @@ def check_invariants(events: Iterable[dict[str, Any]],
                 and item.get("lineage_hash") == result.get("lineage_hash")
                 and item.get("issuer_type") == "oracle"
                 and _before(item, result)
-                and isinstance(item.get("expires_at"), str)
-                and datetime.fromisoformat(item["expires_at"].replace("Z", "+00:00"))
-                    > _time(result)
+                and item.get("expires_at") is not None
+                and _parse_time(item.get("expires_at")) > _time(result)
                 for item in rows
             )
             if not attested:
@@ -200,7 +211,7 @@ def check_invariants(events: Iterable[dict[str, Any]],
             continue
         loop = min(starts, key=_time)
         caps = loop.get("caps")
-        if not isinstance(caps, dict):
+        if not isinstance(caps, dict) or any(cap not in caps for cap in CAPS):
             continue
         scoped = [e for e in group if _time(e) >= _time(loop)]
         breaks = [e for e in scoped if e["event_type"] == "circuit_break"]
@@ -210,8 +221,8 @@ def check_invariants(events: Iterable[dict[str, Any]],
         cost_total = 0.0
         retry_total = 0
         for event in sorted(scoped, key=_time):
-            token_total += float(event.get("token_count", 0))
-            cost_total += float(event.get("cost_usd", 0))
+            token_total += _metric(event, "token_count")
+            cost_total += _metric(event, "cost_usd")
             if token_total > caps["token_budget"] and "token_budget" not in crossings:
                 crossings["token_budget"] = event
             if cost_total > caps["cost_usd"] and "cost_usd" not in crossings:
@@ -220,7 +231,7 @@ def check_invariants(events: Iterable[dict[str, Any]],
                 retry_total += 1
                 if retry_total > caps["max_retries"] and "max_retries" not in crossings:
                     crossings["max_retries"] = event
-            if int(event.get("fanout", 0)) > caps["max_fanout"] and "max_fanout" not in crossings:
+            if _metric(event, "fanout") > caps["max_fanout"] and "max_fanout" not in crossings:
                 crossings["max_fanout"] = event
             elapsed = (_time(event) - _time(loop)).total_seconds() * 1000
             if elapsed > caps["wall_clock_ms"] and "wall_clock_ms" not in crossings:
@@ -275,7 +286,9 @@ def check_invariants(events: Iterable[dict[str, Any]],
         revalidated = any(e["event_type"] == "rule.revalidated"
                           and e.get("rule_id") == rule_id and _before(rule, e)
                           and _before(e, decision) for e in rows)
-        if age_ms > 2 * rule["half_life_ms"] and not revalidated:
+        if rule["half_life_ms"] <= 0:
+            findings.append(_finding("M5", decision, "cited rule has non-positive half-life"))
+        elif age_ms > 2 * rule["half_life_ms"] and not revalidated:
             findings.append(_finding("M5", decision, "cited rule exceeded twice its half-life"))
 
     return findings
