@@ -146,7 +146,7 @@ def check_invariants(events: Iterable[dict[str, Any]],
         caps = event.get("caps")
         if not isinstance(caps, dict) or any(
             not isinstance(caps.get(cap), (int, float))
-            or isinstance(caps.get(cap), bool) or caps.get(cap) <= 0
+            or isinstance(caps.get(cap), bool) or not math.isfinite(caps.get(cap)) or caps.get(cap) <= 0
             for cap in CAPS
         ):
             findings.append(_finding("I5", event, "loop.start has missing or non-positive resource caps"))
