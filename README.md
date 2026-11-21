@@ -1,31 +1,42 @@
 # Boy Scouts Loop Audit System — Specification v2.0
 
-Closes every defect in the meta-audit register (D1–D14) and implements the full roadmap (R1–R11), including the Carbon-Dating Changelog protocol.
+This repository contains the v2.0 audit doctrine plus an executable evidence-checking core.
 
-## Doctrine
-See [DOCTRINE.md](DOCTRINE.md).
+## Doctrine and specifications
+- [Governing doctrine](DOCTRINE.md)
+- [Defect closure register](DEFECT_CLOSURE.md)
+- [Invariants](INVARIANTS.md)
+- [Canary suite specification](CANARY_SUITE.md)
+- [Dual-monitor specification](DUAL_MONITOR.md)
+- [Trust-anchor specification](TRUST_ANCHOR.md)
+- [Acceptance scenario matrix](ACCEPTANCE_TESTS_v2.md)
+- [Carbon-Dating Changelog](CDC.md)
+- [Roadmap](ROADMAP.md)
+- [Self-audit](SELF_AUDIT_v2.md)
 
-## Defect Closure
-See [DEFECT_CLOSURE.md](DEFECT_CLOSURE.md) — every item has a closure mechanism, evidence artifact, and verification query.
+## Executable checks
 
-## Core Artifacts
-| File | Content |
-|------|---------|
-| SCHEMA.md | Corrected event schema (all required types, null caps forbidden) |
-| INVARIANTS.md | I1–I6 (fixed) + M1–M5 with negative tests |
-| META_AUDIT.md | FLW-META-001…010 + recursion termination |
-| FALSIFIABILITY_ENGINE.md | Independent predicate analyzer |
-| CANARY_SUITE.md | Hidden rotating canary protocol |
-| DUAL_MONITOR.md | Agreement / disagreement protocol |
-| TRUST_ANCHOR.md | Merkle + RFC 3161 + fail-closed |
-| AUDIT_PROCEDURE.md | Schema-bound pre/in/post-flight |
-| ACCEPTANCE_TESTS_v2.md | Full matrix covering every D-item |
-| CDC.md | Carbon-Dating Changelog + worked v1→v2 sample |
-| ROADMAP.md | Phased plan with exit criteria |
-| SELF_AUDIT_v2.md | Weakest rows, weakest invariants, single critical assumption |
+Python 3.10+; no third-party packages required.
 
-## Quality Bar
-An adversarial reviewer will find no unclosed defect, no invariant without a negative test, no self-declared falsifiability, no null caps, no unbounded “eventually,” and no changelog entry lacking three time sources or a discordance policy.
+```sh
+python scripts/check_schema_coherence.py
+PYTHONPATH=scripts python -m unittest discover -s tests -v
+python scripts/audit_events.py path/to/events.jsonl
+```
+
+The schema gate checks documented event vocabulary, common envelope fields, bounded non-null caps, event payload properties, and selected conditional requirements.
+
+The event verifier checks a SHA-256 hash chain and the implemented evidence invariants I1–I6 and M2–M5. It returns findings and exits non-zero on violations. It is an offline verifier over supplied JSONL evidence; it is not itself a runtime policy-enforcement point.
+
+## Explicit coverage boundary
+
+The current executable core does **not** provide a production append-only ledger, pre-side-effect enforcement adapter, independent falsifiability analyzer, hidden rotating canary service, independent oracle deployment/attestation, dual-monitor supervisor, RFC 3161 client, public transparency-log publisher/verifier, or external key custody. The CLI cannot prove that an event source is truthful or complete. Those controls remain open until implemented with independently operated services and tests.
+
+The acceptance matrix labels non-executable runtime scenarios as open. A passing local or CI check must not be used to claim that every D1–D14 or R1–R11 roadmap item is closed.
+
+## CI
+
+GitHub Actions runs schema coherence and the unit/negative test suite on pushes and pull requests.
 
 ## License
 MIT.

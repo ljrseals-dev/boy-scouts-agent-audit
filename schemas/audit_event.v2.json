@@ -1,36 +1,600 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://example.com/schemas/audit_event.v2.json",
+  "$id": "https://raw.githubusercontent.com/ljrseals-dev/boy-scouts-agent-audit/main/schemas/audit_event.v2.json",
   "title": "Loop Audit Event v2.0",
   "type": "object",
-  "required": ["event_id", "event_type", "timestamp", "correlation_id", "issuer_id", "issuer_type", "schema_version", "event_hash", "stratum_id"],
+  "required": [
+    "event_id",
+    "event_type",
+    "timestamp",
+    "correlation_id",
+    "issuer_id",
+    "issuer_type",
+    "schema_version",
+    "event_hash",
+    "stratum_id"
+  ],
   "properties": {
-    "event_id": { "type": "string", "format": "uuid" },
+    "event_id": {
+      "type": "string",
+      "format": "uuid"
+    },
     "event_type": {
       "type": "string",
       "enum": [
-        "loop.start", "predicate.registered", "predicate.validated", "check.registered",
-        "plan.emit", "tool.call", "tool.result", "model.call", "model.result",
-        "verify.attempt", "verify.result", "retry.scheduled",
-        "rule.learned", "rule.declined", "rule.revalidated", "rule.retired",
-        "oracle.attested", "monitor.attested", "monitor.disagreement",
-        "circuit_break", "policy.decision", "canary.injected", "canary.result",
-        "log.notarized", "loop.terminate"
+        "loop.start",
+        "predicate.registered",
+        "predicate.validated",
+        "check.registered",
+        "plan.emit",
+        "tool.call",
+        "tool.result",
+        "model.call",
+        "model.result",
+        "verify.attempt",
+        "verify.result",
+        "retry.scheduled",
+        "rule.learned",
+        "rule.declined",
+        "rule.revalidated",
+        "rule.retired",
+        "oracle.attested",
+        "monitor.attested",
+        "monitor.disagreement",
+        "circuit_break",
+        "policy.decision",
+        "canary.injected",
+        "canary.result",
+        "log.notarized",
+        "loop.terminate"
       ]
     },
-    "timestamp": { "type": "string", "format": "date-time" },
-    "correlation_id": { "type": "string", "format": "uuid" },
-    "parent_event_id": { "type": ["string", "null"], "format": "uuid" },
-    "issuer_id": { "type": "string" },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "correlation_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "parent_event_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uuid"
+    },
+    "issuer_id": {
+      "type": "string",
+      "minLength": 1
+    },
     "issuer_type": {
       "type": "string",
-      "enum": ["model", "tool", "orchestrator", "human", "system", "monitor", "oracle", "analyzer"]
+      "enum": [
+        "model",
+        "tool",
+        "orchestrator",
+        "human",
+        "system",
+        "monitor",
+        "oracle",
+        "analyzer"
+      ]
     },
-    "schema_version": { "const": "2.0.0" },
-    "event_hash": { "type": "string" },
-    "previous_hash": { "type": ["string", "null"] },
-    "stratum_id": { "type": "string" },
-    "lineage_hash": { "type": ["string", "null"] }
+    "schema_version": {
+      "const": "2.0.0"
+    },
+    "event_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "previous_hash": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "stratum_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "lineage_hash": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "tool_call_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "verify_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "predicate_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "output_hash": {
+      "type": "string",
+      "minLength": 1
+    },
+    "artifact_hash": {
+      "type": "string",
+      "minLength": 1
+    },
+    "idempotency_key": {
+      "type": "string",
+      "minLength": 1
+    },
+    "breached_cap": {
+      "type": "string",
+      "minLength": 1
+    },
+    "monitor_attestations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "monitor_id",
+          "deployment_id",
+          "code_lineage"
+        ],
+        "properties": {
+          "monitor_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "deployment_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "code_lineage": {
+            "type": "string",
+            "minLength": 1
+          },
+          "breached_cap": {
+            "type": "string"
+          },
+          "value": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "disagreement_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_verify_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "half_life_ms": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "next_revalidation": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "decay_status": {
+      "type": "string",
+      "minLength": 1
+    },
+    "oracle_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "expires_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "nonce": {
+      "type": "string",
+      "minLength": 1
+    },
+    "expected_verdict": {
+      "type": "string",
+      "minLength": 1
+    },
+    "actual_verdict": {
+      "type": "string",
+      "minLength": 1
+    },
+    "suite_hash": {
+      "type": "string",
+      "minLength": 1
+    },
+    "merkle_root": {
+      "type": "string",
+      "minLength": 1
+    },
+    "external_timestamp": {
+      "type": "string",
+      "minLength": 1
+    },
+    "transparency_log_proof": {
+      "type": "string",
+      "minLength": 1
+    },
+    "parent_hash": {
+      "type": "string",
+      "minLength": 1
+    },
+    "goal_attestation": {
+      "type": "string",
+      "minLength": 1
+    },
+    "private_trace": {
+      "type": "string",
+      "minLength": 1
+    },
+    "falsifiable": {
+      "type": "boolean"
+    },
+    "predicate_type": {
+      "type": "string",
+      "minLength": 1
+    },
+    "verdict": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "type": "string",
+      "minLength": 1
+    },
+    "monitor_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "deployment_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "code_lineage": {
+      "type": "string",
+      "minLength": 1
+    },
+    "value": {
+      "type": "number"
+    },
+    "limit": {
+      "type": "number"
+    },
+    "effect_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "attempt": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "retry_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "token_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "cost_usd": {
+      "type": "number",
+      "minimum": 0
+    },
+    "elapsed_ms": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "fanout": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "event_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "stratum_parent_hash": {
+      "type": "string",
+      "minLength": 1
+    },
+    "tsa_token": {
+      "type": "string",
+      "minLength": 1
+    },
+    "transparency_log_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "inclusion_proof": {
+      "type": "string",
+      "minLength": 1
+    },
+    "rule_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "rule_text": {
+      "type": "string",
+      "minLength": 1
+    },
+    "revalidation_result": {
+      "type": "string",
+      "minLength": 1
+    },
+    "decision": {
+      "type": "string",
+      "minLength": 1
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1
+    },
+    "caps": {
+      "type": "object",
+      "required": [
+        "token_budget",
+        "cost_usd",
+        "wall_clock_ms",
+        "max_retries",
+        "max_fanout",
+        "reconciliation_ms"
+      ],
+      "properties": {
+        "token_budget": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "cost_usd": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "wall_clock_ms": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_retries": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_fanout": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "reconciliation_ms": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "additionalProperties": false
+    }
   },
-  "additionalProperties": true
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "loop.start"
+          }
+        },
+        "required": [
+          "event_type"
+        ]
+      },
+      "then": {
+        "required": [
+          "caps"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "tool.call"
+          }
+        },
+        "required": [
+          "event_type"
+        ]
+      },
+      "then": {
+        "required": [
+          "tool_call_id"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "tool.result"
+          }
+        },
+        "required": [
+          "event_type"
+        ]
+      },
+      "then": {
+        "required": [
+          "tool_call_id"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "circuit_break"
+          }
+        },
+        "required": [
+          "event_type"
+        ]
+      },
+      "then": {
+        "required": [
+          "breached_cap"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "check.registered"
+          }
+        },
+        "required": [
+          "event_type"
+        ]
+      },
+      "then": {
+        "required": [
+          "predicate_id",
+          "falsifiable",
+          "predicate_type"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "predicate.validated"
+          }
+        },
+        "required": [
+          "event_type"
+        ]
+      },
+      "then": {
+        "required": [
+          "predicate_id",
+          "verdict"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "verify.result"
+          }
+        },
+        "required": [
+          "event_type"
+        ]
+      },
+      "then": {
+        "required": [
+          "verify_id",
+          "status"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "rule.learned"
+          }
+        },
+        "required": [
+          "event_type"
+        ]
+      },
+      "then": {
+        "required": [
+          "source_verify_id",
+          "half_life_ms",
+          "next_revalidation"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "rule.declined"
+          }
+        },
+        "required": [
+          "event_type"
+        ]
+      },
+      "then": {
+        "required": [
+          "source_verify_id"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "canary.injected"
+          }
+        },
+        "required": [
+          "event_type"
+        ]
+      },
+      "then": {
+        "required": [
+          "nonce",
+          "expected_verdict",
+          "oracle_id",
+          "suite_hash"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "canary.result"
+          }
+        },
+        "required": [
+          "event_type"
+        ]
+      },
+      "then": {
+        "required": [
+          "nonce",
+          "actual_verdict",
+          "oracle_id"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event_type": {
+            "const": "log.notarized"
+          }
+        },
+        "required": [
+          "event_type"
+        ]
+      },
+      "then": {
+        "required": [
+          "merkle_root",
+          "external_timestamp",
+          "transparency_log_proof"
+        ]
+      }
+    }
+  ],
+  "additionalProperties": false
 }
