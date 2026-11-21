@@ -157,7 +157,7 @@ class AuditCoreTests(unittest.TestCase):
             previous = item["event_hash"]
         with tempfile.TemporaryDirectory() as temp:
             path = Path(temp) / "events.jsonl"
-            path.write_text("".join(json.dumps(item) + "\\n" for item in sealed), encoding="utf-8")
+            path.write_text("".join(json.dumps(item) + "\n" for item in sealed), encoding="utf-8")
             result = subprocess.run(
                 [sys.executable, str(Path(__file__).resolve().parents[1] / "scripts/audit_events.py"),
                  str(path)],
