@@ -115,6 +115,32 @@ class AuditCoreTests(unittest.TestCase):
         ]
         self.assertIn("M5", self.codes(events))
 
+
+    def test_i5_break_after_cap_crossing_is_too_late(self):
+        events = safe_loop() + [
+            ev("tool.result", 4, token_count=11),
+            ev("circuit_break", 5, breached_cap="token_budget",
+               monitor_attestations=[{"monitor_id":"a","deployment_id":"a","code_lineage":"a"},
+                                     {"monitor_id":"b","deployment_id":"b","code_lineage":"b"}]),
+        ]
+        self.assertIn("I5", self.codes(events))
+
+    def test_predicate_validation_from_another_loop_cannot_authorize_start(self):
+        events = [
+            ev("predicate.validated", 1, predicate_id="p1", verdict="valid"),
+            {**ev("check.registered", 2, predicate_id="p1", predicate_type="safety",
+                  falsifiable=True), "correlation_id":"loop-2"},
+            {**ev("loop.start", 3, caps=dict(CAPS)), "correlation_id":"loop-2"},
+        ]
+        self.assertIn("M2", self.codes(events))
+        self.assertIn("I2", self.codes(events))
+
+    def test_malformed_cap_value_fails_closed_without_crashing(self):
+        caps = dict(CAPS)
+        caps["max_retries"] = "unlimited"
+        events = [ev("loop.start", 1, caps=caps)]
+        self.assertIn("I5", self.codes(events))
+
     def test_valid_minimal_safety_loop_has_no_findings(self):
         self.assertEqual(check_invariants(safe_loop()), [])
 
